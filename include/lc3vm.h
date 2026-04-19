@@ -18,6 +18,14 @@
 #define NUMOPS (16)
 
 // Need to #define all of your bit manipulation macros like DR, SR1, etc. here.
+#define OPC(i) (((i) >> 12) & 0xF)
+#define DR(i) (((i) >> 9) & 0x7)
+#define SR1(i) (((i) >> 6) & 0x7)
+#define SR2(i) ((i) & 0x7)
+#define SEXTIMM(i) (sign_extend((i) & 0x1F, 5))
+#define OFF6(i) (sign_extend((i) & 0x3F, 6))
+#define PCOFF9(i) (sign_extend((i) & 0x1FF, 9))
+#define PCOFF11(i) (sign_extend((i) & 0x7FF, 11))
 #define FIMM(i) ((i >> 5) & 0x1)
 #define FCND(i) (((i) >> 9) & 0x7)
 #define BR(i) (((i) >> 6) & 0x7)
@@ -65,6 +73,10 @@ extern uint16_t reg[];
 extern uint16_t PC_START;
 
 // your task functions should go here
+uint16_t mem_read(uint16_t address);
+void mem_write(uint16_t address, uint16_t value);
+uint16_t sign_extend(uint16_t x, int bit_count);
+
 typedef void (*trp_ex_f)(void);
 void rti(uint16_t i);
 void res(uint16_t i);
@@ -77,6 +89,21 @@ void tinu16(void);
 void toutu16(void);
 void trap(uint16_t i);
 void ld_img(char* fname, uint16_t offset);
+void update_flags(uint16_t r);
+void add(uint16_t i);
+void andlc(uint16_t i);
+void notlc(uint16_t i);
+void ld(uint16_t i);
+void ldi(uint16_t i);
+void ldr(uint16_t i);
+void lea(uint16_t i);
+void st(uint16_t i);
+void sti(uint16_t i);
+void str(uint16_t i);
+void br(uint16_t i);
+void jmp(uint16_t i);
+void jsr(uint16_t i);
+void start(uint16_t offset);
 
 #ifdef TEST
 } // end extern C for C++ test runner

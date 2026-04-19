@@ -94,6 +94,7 @@ void mem_write(uint16_t address, uint16_t value)
 
 uint16_t sign_extend(uint16_t x, int bit_count)
 {
+  x &= (1 << bit_count) - 1;
   if ((x >> (bit_count - 1)) & 1)
   {
     x |= (0xFFFF << bit_count);
@@ -256,7 +257,7 @@ void ld(uint16_t i)
   uint16_t dr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
 
-  reg[dr] = mem[reg[RPC] + pc_offset];
+  reg[dr] = mem_read(reg[RPC] + pc_offset);
 
   update_flags(dr);
 }
@@ -282,8 +283,8 @@ void ldi(uint16_t i)
   uint16_t dr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
 
-  uint16_t address = mem[reg[RPC] + pc_offset];
-  reg[dr] = mem[address];
+  uint16_t address = mem_read(reg[RPC] + pc_offset);
+  reg[dr] = mem_read(address);
   update_flags(dr);
 }
 /** @brief load base + relative offset
@@ -305,9 +306,9 @@ void ldr(uint16_t i)
 {
   uint16_t dr = (i >> 9) & 0x7;
   uint16_t base = (i >> 6) & 0x7;
-  uint16_t offset = sign_extend(i & 0x3F, 6);
+  int16_t offset = sign_extend(i & 0x3F, 6);
 
-  reg[dr] = mem[reg[base] + offset];
+  reg[dr] = mem_read(reg[base] + offset);
   update_flags(dr);
 }
 
@@ -354,7 +355,7 @@ void st(uint16_t i)
 {
   uint16_t sr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
-  mem[reg[RPC] + pc_offset] = reg[sr];
+  mem_write(reg[RPC] + pc_offset, reg[sr]);
 }
 /** @brief store indirect
  *
@@ -376,8 +377,8 @@ void sti(uint16_t i)
   uint16_t sr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
 
-  uint16_t address = mem[reg[RPC] + pc_offset];
-  mem[address] = reg[sr];
+  uint16_t address = mem_read(reg[RPC] + pc_offset);
+  mem_write(address, reg[sr]);
 }
 /** @brief store offset relative to base address
  *
@@ -399,7 +400,7 @@ void str(uint16_t i)
   uint16_t base = (i >> 6) & 0x7;
   uint16_t offset = sign_extend(i & 0x3F, 6);
 
-  mem[reg[base] + offset] = reg[sr];
+  mem_write(reg[base] + offset, reg[sr]);
 }
 
 /** @brief jump unconditionally
@@ -652,7 +653,7 @@ void start(uint16_t offset)
   running = true;
   while (running)
   {
-    uint16_t instr = mem[reg[RPC]++];
+    uint16_t instr = mem_read(reg[RPC]++);
     uint16_t op = instr >> 12;
 
     switch (op)
