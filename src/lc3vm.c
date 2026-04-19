@@ -507,7 +507,7 @@ void res(uint16_t i) {} // unused
  * register.  We hook into C standard library to get the
  * character and store it.
  */
-void tgetc()
+void tgetc(void)
 { reg[R0] = getchar(); }
 
 /** @brief write character OS service routine
@@ -516,7 +516,7 @@ void tgetc()
  * standard output (usually connected to a console
  * or terminal).
  */
-void tout()
+void tout(void)
 { fprintf(stdout, "%c", (char)reg[R0]); }
 
 /** @brief write string OS service routine
@@ -535,7 +535,7 @@ void tout()
  * it casts the 16 bits to an 8 bit (ascii) character and outputs
  * that.  High 8 bits are not used here for characters / strings.
  */
-void tputs()
+void tputs(void)
 {
   uint16_t* p = mem + reg[R0];
   while (*p)
@@ -551,7 +551,7 @@ void tputs()
  * But character is echoed to console after being typed, so
  * can see text as you type it if use this routine.
  */
-void tin()
+void tin(void)
 {
   reg[R0] = getchar();
   fprintf(stdout, "%c", reg[R0]);
@@ -565,7 +565,7 @@ void tin()
  * LC-3 memory.  And correspondingly here have routines that expect
  * 2 ASCII characters per word and displays them accordingly.
  */
-void tputsp()
+void tputsp(void)
 { /* Not Implemented */
 }
 
@@ -576,7 +576,7 @@ void tputsp()
  * that is checked at start of each fetch-decode-execute cycle to
  * determine if we should halt execution.
  */
-void thalt()
+void thalt(void)
 { running = false; }
 
 /** @brief read unsigned int OS service routine
@@ -587,7 +587,7 @@ void thalt()
  * bit value into R0.  It is undefined what happens if the value
  * cannot be correctly parsed into an unsigned 16 bit value here.
  */
-void tinu16()
+void tinu16(void)
 { fscanf(stdin, "%hu", &reg[R0]); }
 
 /** @brief write unsigned int OS service routine
@@ -595,7 +595,7 @@ void tinu16()
  * Write value in R0, interpreted as a 16 bit unsigned integer, to the
  * standard output console.
  */
-void toutu16()
+void toutu16(void)
 { fprintf(stdout, "%hu\n", reg[R0]); }
 
 /**

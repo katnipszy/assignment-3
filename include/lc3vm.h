@@ -25,7 +25,6 @@
 #define TRP(i) ((i) & 0xFF)
 
 typedef void (*op_ex_f)(uint16_t i);
-typedef void (*trp_ex_f)();
 
 enum
 {
@@ -66,16 +65,16 @@ extern uint16_t reg[];
 extern uint16_t PC_START;
 
 // your task functions should go here
-
+typedef void (*trp_ex_f)(void);
 void rti(uint16_t i);
 void res(uint16_t i);
-void tgetc();
-void tout();
-void tputs();
-void tin();
-void thalt();
-void tinu16();
-void toutu16();
+void tgetc(void);
+void tout(void);
+void tputs(void);
+void tin(void);
+void thalt(void);
+void tinu16(void);
+void toutu16(void);
 void trap(uint16_t i);
 void ld_img(char* fname, uint16_t offset);
 

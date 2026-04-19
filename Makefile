@@ -1,5 +1,6 @@
 
 # source files in this project (for beautification)
+CXXFLAGS = -std=c++11 -Wall -Werror -pedantic -Iinclude
 PROJECT_NAME=assg03
 assg_src = lc3vm.c \
 	   lc3vm_dbg.c
