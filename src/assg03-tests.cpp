@@ -9,7 +9,6 @@
  * Unit tests for assignment 03, implementaiton of LC-3
  * microarchitecture/VM simulator.
  */
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #define TEST
