@@ -94,6 +94,7 @@ void mem_write(uint16_t address, uint16_t value)
 
 uint16_t sign_extend(uint16_t x, int bit_count)
 {
+  x &= (1 << bit_count) - 1;
   if ((x >> (bit_count - 1)) & 1)
   {
     x |= (0xFFFF << bit_count);
@@ -256,7 +257,7 @@ void ld(uint16_t i)
   uint16_t dr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
 
-  reg[dr] = mem[reg[RPC] + pc_offset];
+  reg[dr] = mem_read(reg[RPC] + pc_offset);
 
   update_flags(dr);
 }
@@ -282,8 +283,8 @@ void ldi(uint16_t i)
   uint16_t dr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
 
-  uint16_t address = mem[reg[RPC] + pc_offset];
-  reg[dr] = mem[address];
+  uint16_t address = mem_read(reg[RPC] + pc_offset);
+  reg[dr] = mem_read(address);
   update_flags(dr);
 }
 /** @brief load base + relative offset
@@ -305,9 +306,9 @@ void ldr(uint16_t i)
 {
   uint16_t dr = (i >> 9) & 0x7;
   uint16_t base = (i >> 6) & 0x7;
-  uint16_t offset = sign_extend(i & 0x3F, 6);
+  int16_t offset = sign_extend(i & 0x3F, 6);
 
-  reg[dr] = mem[reg[base] + offset];
+  reg[dr] = mem_read(reg[base] + offset);
   update_flags(dr);
 }
 
@@ -354,7 +355,7 @@ void st(uint16_t i)
 {
   uint16_t sr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
-  mem[reg[RPC] + pc_offset] = reg[sr];
+  mem_write(reg[RPC] + pc_offset, reg[sr]);
 }
 /** @brief store indirect
  *
@@ -376,8 +377,8 @@ void sti(uint16_t i)
   uint16_t sr = (i >> 9) & 0x7;
   uint16_t pc_offset = sign_extend(i & 0x1FF, 9);
 
-  uint16_t address = mem[reg[RPC] + pc_offset];
-  mem[address] = reg[sr];
+  uint16_t address = mem_read(reg[RPC] + pc_offset);
+  mem_write(address, reg[sr]);
 }
 /** @brief store offset relative to base address
  *
@@ -399,7 +400,7 @@ void str(uint16_t i)
   uint16_t base = (i >> 6) & 0x7;
   uint16_t offset = sign_extend(i & 0x3F, 6);
 
-  mem[reg[base] + offset] = reg[sr];
+  mem_write(reg[base] + offset, reg[sr]);
 }
 
 /** @brief jump unconditionally
@@ -507,7 +508,7 @@ void res(uint16_t i) {} // unused
  * register.  We hook into C standard library to get the
  * character and store it.
  */
-void tgetc()
+void tgetc(void)
 { reg[R0] = getchar(); }
 
 /** @brief write character OS service routine
@@ -516,7 +517,7 @@ void tgetc()
  * standard output (usually connected to a console
  * or terminal).
  */
-void tout()
+void tout(void)
 { fprintf(stdout, "%c", (char)reg[R0]); }
 
 /** @brief write string OS service routine
@@ -535,7 +536,7 @@ void tout()
  * it casts the 16 bits to an 8 bit (ascii) character and outputs
  * that.  High 8 bits are not used here for characters / strings.
  */
-void tputs()
+void tputs(void)
 {
   uint16_t* p = mem + reg[R0];
   while (*p)
@@ -551,7 +552,7 @@ void tputs()
  * But character is echoed to console after being typed, so
  * can see text as you type it if use this routine.
  */
-void tin()
+void tin(void)
 {
   reg[R0] = getchar();
   fprintf(stdout, "%c", reg[R0]);
@@ -565,7 +566,7 @@ void tin()
  * LC-3 memory.  And correspondingly here have routines that expect
  * 2 ASCII characters per word and displays them accordingly.
  */
-void tputsp()
+void tputsp(void)
 { /* Not Implemented */
 }
 
@@ -576,7 +577,7 @@ void tputsp()
  * that is checked at start of each fetch-decode-execute cycle to
  * determine if we should halt execution.
  */
-void thalt()
+void thalt(void)
 { running = false; }
 
 /** @brief read unsigned int OS service routine
@@ -587,7 +588,7 @@ void thalt()
  * bit value into R0.  It is undefined what happens if the value
  * cannot be correctly parsed into an unsigned 16 bit value here.
  */
-void tinu16()
+void tinu16(void)
 { fscanf(stdin, "%hu", &reg[R0]); }
 
 /** @brief write unsigned int OS service routine
@@ -595,7 +596,7 @@ void tinu16()
  * Write value in R0, interpreted as a 16 bit unsigned integer, to the
  * standard output console.
  */
-void toutu16()
+void toutu16(void)
 { fprintf(stdout, "%hu\n", reg[R0]); }
 
 /**
@@ -652,7 +653,7 @@ void start(uint16_t offset)
   running = true;
   while (running)
   {
-    uint16_t instr = mem[reg[RPC]++];
+    uint16_t instr = mem_read(reg[RPC]++);
     uint16_t op = instr >> 12;
 
     switch (op)

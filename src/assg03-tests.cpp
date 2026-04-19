@@ -9,23 +9,22 @@
  * Unit tests for assignment 03, implementaiton of LC-3
  * microarchitecture/VM simulator.
  */
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #define TEST
 #include "lc3vm.h"
 #include "lc3vm_dbg.h"
 
-#undef task1
-#undef task2
-#undef task3
-#undef task4
-#undef task5
-#undef task6
-#undef task7
-#undef task8
-#undef task9
-#undef task10
+#define task1
+#define task2
+#define task3
+#define task4
+#define task5
+#define task6
+#define task7
+#define task8
+#define task9
+#define task10
 
 /**
  * @brief Task 1: Test memory access functions to read and write into
